@@ -1,1 +1,0 @@
-# Narrative-QC-studio
