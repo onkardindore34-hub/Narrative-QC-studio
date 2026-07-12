@@ -1,24 +1,3 @@
-import os
-import sys
-import subprocess
-
-# 1. Force background installation before importing anything else
-def install_and_import(package, import_name=None):
-    if import_name is None:
-        import_name = package
-    try:
-        __import__(import_name)
-    except ImportError:
-        subprocess.check_call([sys.executable, "-m", "pip", "install", package])
-
-# Install required core packages dynamically
-install_and_import("streamlit")
-install_and_import("spacy")
-install_and_import("dateparser")
-install_and_import("python-docx", "docx")
-install_and_import("pypdf")
-
-# Now safe to perform standard library imports
 import streamlit as st
 import spacy
 import dateparser
@@ -27,28 +6,23 @@ from datetime import datetime
 from docx import Document
 from pypdf import PdfReader
 
-# 2. Dynamic language model download execution
-try:
-    nlp = spacy.load("en_core_web_sm")
-except OSError:
-    import spacy.cli
-    spacy.cli.download("en_core_web_sm")
-    nlp = spacy.load("en_core_web_sm")
+# Load the model directly (since requirements.txt pre-downloads it)
+nlp = spacy.load("en_core_web_sm")
 
-# 3. Session State Initialization for Authentication
+# Session State Initialization for Authentication
 if "authenticated" not in st.session_state:
     st.session_state.authenticated = False
 
-# 4. Security Gateway Login View
+# Security Gateway Login View
 if not st.session_state.authenticated:
     st.set_page_config(page_title="Workspace Gateway | Security Login", layout="centered", page_icon="🔒")
     
     st.title("🔒 Narrative QC Studio Pro")
     st.subheader("Secure Verification Workspace Gateway")
-    st.write("Please authenticate with your corporate credentials to access the quality control processing environment.")
+    st.write("Please authenticate with your credentials to access the quality control processing environment.")
     
-    username = st.text_input("Username", placeholder="Enter your corporate ID")
-    password = st.text_input("Password", type="password", placeholder="Enter your security token")
+    username = st.text_input("Username", placeholder="Enter your ID")
+    password = st.text_input("Password", type="password", placeholder="Enter your token")
     
     if st.button("Login to Workspace", use_container_width=True):
         if username == "admin" and password == "clinical2026":
@@ -59,14 +33,14 @@ if not st.session_state.authenticated:
             st.error("Invalid credentials. Please verify your access tokens and try again.")
     st.stop()
 
-# 5. Authenticated Application Interface
+# Authenticated Application Interface
 st.set_page_config(page_title="Narrative QC Studio Pro", layout="wide", page_icon="🛡️")
 
 # Top Header Profile Panel
 st.markdown("""
     <div style="background-color:#1e293b; padding:15px; border-radius:10px; margin-bottom:20px; color:white;">
         <h2 style="margin:0; color:#38bdf8;">🛡️ Narrative QC Studio Pro</h2>
-        <p style="margin:5px 0 0 0; font-size:14px; color:#94a3b8;">Headless Quality Control & Automated Chronology Verification Suite</p>
+        <p style="margin:5px 0 0 0; font-size:14px; color:#94a3b8;">Quality Control & Automated Chronology Verification Suite</p>
     </div>
 """, unsafe_allow_html=True)
 
@@ -126,7 +100,6 @@ with right_col:
         if extracted_events:
             st.success(f"Analysis Complete: Identified and verified {len(extracted_events)} explicit clinical timelines.")
             
-            # Interactive Timeline Grid View
             for idx, event in enumerate(extracted_events):
                 with st.expander(f"📍 [{event['date'].strftime('%Y-%m-%d')}] - Source Fragment Reference {idx+1}"):
                     st.markdown(f"**Identified Temporal Marker:** `{event['date_text']}`")
@@ -153,7 +126,7 @@ with right_col:
 st.markdown("---")
 footer_cols = st.columns([3, 1])
 with footer_cols[0]:
-    st.caption("🔒 Architecture Status: AES-256 Memory Bound | Blinding Protocol Active | Zero Network Data Leaks")
+    st.caption("🔒 Architecture Status: Memory Bound | Blinding Protocol Active | Zero Network Data Leaks")
 with footer_cols[1]:
     if st.button("Secure Workspace Exit", use_container_width=True):
         st.session_state.authenticated = False
